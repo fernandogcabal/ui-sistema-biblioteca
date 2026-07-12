@@ -1,0 +1,146 @@
+<div class="dashboard-layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <h3>Biblioteca FJ</h3>
+    </div>
+
+    <nav class="sidebar-menu">
+      <a href="#" class="menu-item active"> <span class="icon">📚</span> Libros </a>
+      <a href="#" class="menu-item"> <span class="icon">👤</span> Perfil </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button (click)="onLogout()" class="btn-logout">
+        <span class="icon">🚪</span> Cerrar Sesión
+      </button>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <header class="content-header">
+      <h2>Catálogo de Libros</h2>
+      <button class="btn-primary" (click)="openModal()">+ Agregar Libro</button>
+    </header>
+
+    <section class="table-container">
+      <table class="custom-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Título</th>
+            <th>Autor</th>
+            <th>ISBN</th>
+            <th>Formato</th>
+            <th>Estado</th>
+            <th class="text-center">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (book of books(); track book.id) {
+            <tr>
+              <td>{{ book.id }}</td>
+              <td>
+                <strong>{{ book.title }}</strong>
+              </td>
+              <td>{{ book.author }}</td>
+              <td>
+                <code>{{ book.isbn }}</code>
+              </td>
+              <td>{{ book.format }}</td>
+              <td>
+                <span class="badge" [ngClass]="book.readingStatus.toLowerCase()">
+                  {{ book.readingStatus }}
+                </span>
+              </td>
+              <td class="text-center">
+                <button
+                  class="btn-delete-action"
+                  (click)="onDeleteBook(book.id)"
+                  title="Eliminar Libro"
+                >
+                  🗑️
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" class="text-center">No hay libros registrados en el sistema.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </section>
+  </main>
+</div>
+@if (isModalOpen()) {
+  <div class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Agregar Nuevo Libro</h3>
+        <button class="btn-close" (click)="closeModal()">&times;</button>
+      </div>
+
+      <form (ngSubmit)="onSaveBook()">
+        <div class="modal-body">
+          <div class="form-group-modal">
+            <label>Título *</label>
+            <input
+              type="text"
+              [(ngModel)]="newBook.title"
+              name="title"
+              required
+              placeholder="Ej. El Alquimista"
+            />
+          </div>
+
+          <div class="form-group-modal">
+            <label>Autor *</label>
+            <input
+              type="text"
+              [(ngModel)]="newBook.author"
+              name="author"
+              required
+              placeholder="Ej. Paulo Coelho"
+            />
+          </div>
+
+          <div class="form-group-modal">
+            <label>ISBN *</label>
+            <input
+              type="text"
+              [(ngModel)]="newBook.isbn"
+              name="isbn"
+              required
+              placeholder="Ej. 978..."
+            />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group-modal half">
+              <label>Formato</label>
+              <select [(ngModel)]="newBook.format" name="format">
+                <option value="PHYSICAL">Físico</option>
+                <option value="EBOOK">E-Book</option>
+                <option value="AUDIOBOOK">Audiobook</option>
+              </select>
+            </div>
+
+            <div class="form-group-modal half">
+              <label>Estado de Lectura</label>
+              <select [(ngModel)]="newBook.readingStatus" name="readingStatus">
+                <option value="TO_READ">Por Leer</option>
+                <option value="READING">Leyendo</option>
+                <option value="READ">Leído</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" (click)="closeModal()">Cancelar</button>
+          <button type="submit" class="btn-submit-modal">Guardar Libro</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
