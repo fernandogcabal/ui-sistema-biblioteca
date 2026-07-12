@@ -53,6 +53,9 @@
                 </span>
               </td>
               <td class="text-center">
+                <button class="btn-edit-action" (click)="openEditModal(book)" title="Editar Libro">
+                  ✏️
+                </button>
                 <button
                   class="btn-delete-action"
                   (click)="onDeleteBook(book.id)"
@@ -76,7 +79,7 @@
   <div class="modal-overlay">
     <div class="modal-card">
       <div class="modal-header">
-        <h3>Agregar Nuevo Libro</h3>
+        <h3>{{ isEditing() ? 'Editar Libro' : 'Agregar Nuevo Libro' }}</h3>
         <button class="btn-close" (click)="closeModal()">&times;</button>
       </div>
 
@@ -130,7 +133,8 @@
               <select [(ngModel)]="newBook.readingStatus" name="readingStatus">
                 <option value="TO_READ">Por Leer</option>
                 <option value="READING">Leyendo</option>
-                <option value="READ">Leído</option>
+                <option value="COMPLETED">Leído</option>
+                <option value="WISHLIST">Lista de deseos</option>
               </select>
             </div>
           </div>

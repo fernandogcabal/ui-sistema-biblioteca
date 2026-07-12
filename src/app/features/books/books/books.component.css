@@ -149,9 +149,10 @@
   font-size: 0.8rem;
   font-weight: 600;
 }
+.badge.completed { background-color: #d4edda; color: #155724; }
 .badge.to_read { background-color: #fff3cd; color: #856404; }
 .badge.reading { background-color: #cce5ff; color: #004085; }
-.badge.read { background-color: #d4edda; color: #155724; }
+.badge.wishlist { background-color: #e2e3e5; color: #383d41; }
 
 /* ==========================================================================
    3. ESTILOS DEL MODAL (EMERGENTE)
@@ -301,4 +302,20 @@
 
 .btn-delete-action:active {
   transform: scale(0.95);
+}
+
+.btn-edit-action {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 0.4rem;
+  border-radius: 4px;
+  transition: background-color 0.2s, transform 0.1s;
+  margin-right: 0.5rem; /* Separación con el basurero */
+}
+
+.btn-edit-action:hover {
+  background-color: #e8f4fd;
+  transform: scale(1.1);
 }

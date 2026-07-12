@@ -23,6 +23,10 @@ export class BooksComponent implements OnInit {
   // Control de visibilidad del Modal
   isModalOpen = signal<boolean>(false);
 
+  // 💡 Nueva variable para saber si estamos editando
+  isEditing = signal<boolean>(false);
+  editingBookId: number | null = null;
+
   // Objeto temporal para el formulario basado en tu CreateBookRequest
   newBook: CreateBookRequest = {
     title: '',
@@ -50,6 +54,25 @@ export class BooksComponent implements OnInit {
     this.isModalOpen.set(true);
   }
 
+  // 💡 Función nueva para abrir el modal en modo edición
+  openEditModal(book: Book): void {
+    this.isEditing.set(true); // Estamos editando
+    this.editingBookId = book.id;
+    
+    // Rellenamos el formulario con los datos actuales del libro
+    this.newBook = {
+      title: book.title,
+      author: book.author,
+      isbn: book.isbn,
+      readingStatus: book.readingStatus as any,
+      format: book.format as any,
+      available: book.available,
+      userId: 1 // O el ID correspondiente
+    };
+    
+    this.isModalOpen.set(true);
+  }
+
   closeModal(): void {
     this.isModalOpen.set(false);
   }
@@ -66,23 +89,31 @@ export class BooksComponent implements OnInit {
     };
   }
 
-  onSaveBook(): void {
+onSaveBook(): void {
     if (!this.newBook.title || !this.newBook.author || !this.newBook.isbn) {
-      alert('Por favor, completa los campos obligatorios (Título, Autor e ISBN).');
+      alert('Por favor, completa los campos obligatorios.');
       return;
     }
 
-    this.bookService.createBook(this.newBook).subscribe({
-      next: (savedBook) => {
-        console.log('Libro guardado con éxito:', savedBook);
-        this.closeModal();   // Cerramos la ventana emergente
-        this.loadBooks();    // Volvemos a consultar la lista a Spring Boot para actualizar la tabla
-      },
-      error: (err) => {
-        console.error('Error al guardar el libro:', err);
-        alert('Hubo un error al guardar el libro.');
-      }
-    });
+    if (this.isEditing()) {
+      // 📝 MODO EDICIÓN: Petición PUT
+      this.bookService.updateBook(this.editingBookId!, this.newBook).subscribe({
+        next: () => {
+          this.closeModal();
+          this.loadBooks();
+        },
+        error: (err) => console.error('Error al actualizar:', err)
+      });
+    } else {
+      // ➕ MODO CREACIÓN: Petición POST
+      this.bookService.createBook(this.newBook).subscribe({
+        next: () => {
+          this.closeModal();
+          this.loadBooks();
+        },
+        error: (err) => console.error('Error al guardar:', err)
+      });
+    }
   }
 
   onLogout(): void {
