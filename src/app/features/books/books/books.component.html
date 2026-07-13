@@ -5,8 +5,12 @@
     </div>
 
     <nav class="sidebar-menu">
-      <a href="#" class="menu-item active"> <span class="icon">📚</span> Libros </a>
-      <a href="#" class="menu-item"> <span class="icon">👤</span> Perfil </a>
+      <a (click)="setView('libros')" class="menu-item" [class.active]="currentTab() === 'libros'">
+        <span class="icon">📚</span> Libros
+      </a>
+      <a (click)="setView('perfil')" class="menu-item" [class.active]="currentTab() === 'perfil'">
+        <span class="icon">👤</span> Perfil
+      </a>
     </nav>
 
     <div class="sidebar-footer">
@@ -17,64 +21,161 @@
   </aside>
 
   <main class="main-content">
-    <header class="content-header">
-      <h2>Catálogo de Libros</h2>
-      <button class="btn-primary" (click)="openModal()">+ Agregar Libro</button>
-    </header>
+    @if (currentTab() === 'libros') {
+      <header class="content-header">
+        <h2>Catálogo de Libros</h2>
+        <button class="btn-primary" (click)="openModal()">+ Agregar Libro</button>
+      </header>
 
-    <section class="table-container">
-      <table class="custom-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Título</th>
-            <th>Autor</th>
-            <th>ISBN</th>
-            <th>Formato</th>
-            <th>Estado</th>
-            <th class="text-center">Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (book of books(); track book.id) {
+      <section class="table-container">
+        <table class="custom-table">
+          <thead>
             <tr>
-              <td>{{ book.id }}</td>
-              <td>
-                <strong>{{ book.title }}</strong>
-              </td>
-              <td>{{ book.author }}</td>
-              <td>
-                <code>{{ book.isbn }}</code>
-              </td>
-              <td>{{ book.format }}</td>
-              <td>
-                <span class="badge" [ngClass]="book.readingStatus.toLowerCase()">
-                  {{ book.readingStatus }}
-                </span>
-              </td>
-              <td class="text-center">
-                <button class="btn-edit-action" (click)="openEditModal(book)" title="Editar Libro">
-                  ✏️
-                </button>
-                <button
-                  class="btn-delete-action"
-                  (click)="onDeleteBook(book.id)"
-                  title="Eliminar Libro"
-                >
-                  🗑️
-                </button>
-              </td>
+              <th>ID</th>
+              <th>Título</th>
+              <th>Autor</th>
+              <th>ISBN</th>
+              <th>Formato</th>
+              <th>Estado</th>
+              <th class="text-center">Acciones</th>
             </tr>
-          } @empty {
-            <tr>
-              <td colspan="6" class="text-center">No hay libros registrados en el sistema.</td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </section>
+          </thead>
+          <tbody>
+            @for (book of books(); track book.id) {
+              <tr>
+                <td>{{ book.id }}</td>
+                <td>
+                  <strong>{{ book.title }}</strong>
+                </td>
+                <td>{{ book.author }}</td>
+                <td>
+                  <code>{{ book.isbn }}</code>
+                </td>
+                <td>{{ book.format }}</td>
+                <td>
+                  <span class="badge" [ngClass]="book.readingStatus.toLowerCase()">
+                    {{ book.readingStatus }}
+                  </span>
+                </td>
+                <td class="text-center">
+                  <button
+                    class="btn-edit-action"
+                    (click)="openEditModal(book)"
+                    title="Editar Libro"
+                  >
+                    ✏️
+                  </button>
+                  <button
+                    class="btn-delete-action"
+                    (click)="onDeleteBook(book.id)"
+                    title="Eliminar Libro"
+                  >
+                    🗑️
+                  </button>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="7" class="text-center">No hay libros registrados en el sistema.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </section>
+    }
+
+    @if (currentTab() === 'perfil') {
+      <div
+        class="profile-card"
+        style="
+          background: white;
+          padding: 2.5rem;
+          border-radius: 8px;
+          max-width: 550px;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+          border: 1px solid #e9ecef;
+          margin-top: 1rem;
+        "
+      >
+        <div style="text-align: center; margin-bottom: 2rem">
+          <div
+            style="
+              width: 80px;
+              height: 80px;
+              background-color: #e8f4fd;
+              border-radius: 50%;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              font-size: 2.5rem;
+              margin: 0 auto 1rem;
+              color: #3498db;
+            "
+          >
+            👤
+          </div>
+          <h2 style="margin: 0; color: #2c3e50; font-size: 1.6rem">Mi Perfil</h2>
+          <p style="color: #7f8c8d; font-size: 0.9rem; margin-top: 0.5rem">
+            Gestiona la información de tu cuenta en la Biblioteca FJ
+          </p>
+        </div>
+
+        <form (ngSubmit)="onUpdateProfile()">
+          <div style="margin-bottom: 1.5rem; display: flex; flex-direction: column">
+            <label
+              style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem; color: #34495e"
+              >Nombre de Usuario</label
+            >
+            <input
+              type="text"
+              [(ngModel)]="userProfile().username"
+              name="username"
+              required
+              style="
+                padding: 0.75rem;
+                border: 1px solid #dcdde1;
+                border-radius: 6px;
+                font-size: 1rem;
+                outline: none;
+              "
+            />
+          </div>
+
+          <div style="margin-bottom: 1.5rem; display: flex; flex-direction: column">
+            <label
+              style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem; color: #34495e"
+              >Correo Electrónico</label
+            >
+            <input
+              type="email"
+              [(ngModel)]="userProfile().email"
+              name="email"
+              required
+              style="
+                padding: 0.75rem;
+                border: 1px solid #dcdde1;
+                border-radius: 6px;
+                font-size: 1rem;
+                outline: none;
+              "
+            />
+          </div>
+
+          <div style="margin-top: 2rem; display: flex; justify-content: flex-end">
+            <button
+              type="submit"
+              class="btn-primary"
+              style="padding: 0.75rem 1.5rem; font-weight: 600"
+            >
+              Guardar Cambios
+            </button>
+          </div>
+        </form>
+      </div>
+    }
   </main>
 </div>
+
 @if (isModalOpen()) {
   <div class="modal-overlay">
     <div class="modal-card">

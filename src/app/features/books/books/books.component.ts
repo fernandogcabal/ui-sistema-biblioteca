@@ -1,15 +1,16 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms'; // ¡Importante para los formularios!
+import { FormsModule } from '@angular/forms'; 
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { BookService } from '../../../core/services/book.service';
-import { Book, CreateBookRequest, BookFormat, ReadingStatus } from '../../../shared/models';
+import { Book, CreateBookRequest } from '../../../shared/models';
+import { HttpClient } from '@angular/common/http'; // Asegura este import arriba
 
 @Component({
   selector: 'app-books',
   standalone: true,
-  imports: [CommonModule, FormsModule], // Añadimos FormsModule aquí
+  imports: [CommonModule, FormsModule], 
   templateUrl: './books.component.html',
   styleUrls: ['./books.component.css']
 })
@@ -17,17 +18,27 @@ export class BooksComponent implements OnInit {
   private authService = inject(AuthService);
   private bookService = inject(BookService);
   private router = inject(Router);
+  private http = inject(HttpClient);
+private userApiUrl = 'http://localhost:8080/api/users/me';
+
+userProfile = signal({
+  username: '',
+  email: ''
+});
 
   books = signal<Book[]>([]);
   
+  // 💡 Control de pestañas: 'libros' o 'perfil'
+  currentTab = signal<'libros' | 'perfil'>('libros');
+
   // Control de visibilidad del Modal
   isModalOpen = signal<boolean>(false);
 
-  // 💡 Nueva variable para saber si estamos editando
+  // Nueva variable para saber si estamos editando
   isEditing = signal<boolean>(false);
   editingBookId: number | null = null;
 
-  // Objeto temporal para el formulario basado en tu CreateBookRequest
+  // Objeto temporal para el formulario
   newBook: CreateBookRequest = {
     title: '',
     author: '',
@@ -35,12 +46,20 @@ export class BooksComponent implements OnInit {
     readingStatus: 'TO_READ',
     format: 'PHYSICAL',
     available: true,
-    userId: 1 // Por ahora quemado, luego se puede extraer del token si el backend lo requiere
+    userId: 1 
   };
 
   ngOnInit(): void {
     this.loadBooks();
   }
+
+  // 💡 Método para alternar las vistas desde el menú lateral
+ setView(view: 'libros' | 'perfil'): void {
+  this.currentTab.set(view);
+  if (view === 'perfil') {
+    this.loadUserProfile(); // 💡 Si entra a perfil, traemos los datos reales de la BD
+  }
+}
 
   loadBooks(): void {
     this.bookService.getBooks().subscribe({
@@ -50,16 +69,15 @@ export class BooksComponent implements OnInit {
   }
 
   openModal(): void {
+    this.isEditing.set(false);
     this.resetForm();
     this.isModalOpen.set(true);
   }
 
-  // 💡 Función nueva para abrir el modal en modo edición
   openEditModal(book: Book): void {
-    this.isEditing.set(true); // Estamos editando
+    this.isEditing.set(true); 
     this.editingBookId = book.id;
     
-    // Rellenamos el formulario con los datos actuales del libro
     this.newBook = {
       title: book.title,
       author: book.author,
@@ -67,7 +85,7 @@ export class BooksComponent implements OnInit {
       readingStatus: book.readingStatus as any,
       format: book.format as any,
       available: book.available,
-      userId: 1 // O el ID correspondiente
+      userId: 1 
     };
     
     this.isModalOpen.set(true);
@@ -89,14 +107,13 @@ export class BooksComponent implements OnInit {
     };
   }
 
-onSaveBook(): void {
+  onSaveBook(): void {
     if (!this.newBook.title || !this.newBook.author || !this.newBook.isbn) {
       alert('Por favor, completa los campos obligatorios.');
       return;
     }
 
     if (this.isEditing()) {
-      // 📝 MODO EDICIÓN: Petición PUT
       this.bookService.updateBook(this.editingBookId!, this.newBook).subscribe({
         next: () => {
           this.closeModal();
@@ -105,7 +122,6 @@ onSaveBook(): void {
         error: (err) => console.error('Error al actualizar:', err)
       });
     } else {
-      // ➕ MODO CREACIÓN: Petición POST
       this.bookService.createBook(this.newBook).subscribe({
         next: () => {
           this.closeModal();
@@ -122,21 +138,50 @@ onSaveBook(): void {
   }
 
   onDeleteBook(id: number): void {
-  // Una confirmación nativa rápida para evitar accidentes
-  if (confirm('¿Estás seguro de que deseas eliminar este libro?')) {
-    // Nota: Asegúrate de que tu BookService tenga el método deleteBook(id)
-    // Si no lo tiene, puedes agregar en tu book.service.ts: deleteBook(id) { return this.http.delete(`${this.apiUrl}/${id}`); }
-    this.bookService.deleteBook(id).subscribe({
-      next: () => {
-        console.log(`Libro con ID ${id} eliminado con éxito.`);
-        // Recargamos la lista desde el backend para actualizar la tabla inmediatamente
-        this.loadBooks(); 
-      },
-      error: (err) => {
-        console.error('Error al eliminar el libro:', err);
-        alert('No se pudo eliminar el libro.');
-      }
-    });
+    if (confirm('¿Estás seguro de que deseas eliminar este libro?')) {
+      this.bookService.deleteBook(id).subscribe({
+        next: () => {
+          console.log(`Libro con ID ${id} eliminado con éxito.`);
+          this.loadBooks(); 
+        },
+        error: (err) => {
+          console.error('Error al eliminar el libro:', err);
+          alert('No se pudo eliminar el libro.');
+        }
+      });
+    }
   }
+
+  loadUserProfile(): void {
+  this.http.get<any>(this.userApiUrl).subscribe({
+    next: (data) => {
+      this.userProfile.set({
+        username: data.username,
+        email: data.email
+      });
+    },
+    error: (err) => {
+      console.error('Error al obtener perfil desde Spring Boot:', err);
+      alert('No se pudo cargar la información del usuario.');
+    }
+  });
 }
+
+onUpdateProfile(): void {
+  // Mandamos el objeto modificado al endpoint PUT
+  this.http.put<any>(this.userApiUrl, this.userProfile()).subscribe({
+    next: (updatedUser) => {
+      alert('¡Perfil actualizado con éxito en PostgreSQL!');
+      this.userProfile.set({
+        username: updatedUser.username,
+        email: updatedUser.email
+      });
+    },
+    error: (err) => {
+      console.error('Error al actualizar el perfil:', err);
+      alert('Ocurrió un error al intentar guardar los cambios.');
+    }
+  });
+}
+
 }
