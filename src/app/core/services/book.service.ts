@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Book, CreateBookRequest } from '../../shared/models';
 
@@ -8,12 +8,15 @@ import { Book, CreateBookRequest } from '../../shared/models';
 })
 export class BookService {
   private http = inject(HttpClient);
-  // Reemplaza con la URL exacta de tu controlador de libros en Spring Boot
   private apiUrl = 'http://localhost:8080/api/books'; 
 
-  // Obtener todos los libros (El interceptor añadirá el token automáticamente)
-  getBooks(): Observable<Book[]> {
-    return this.http.get<Book[]>(this.apiUrl);
+  // 💡 Modificado para enviar parámetros de paginación (?page=X&size=Y)
+  getBooks(page: number, size: number): Observable<any> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
+
+    return this.http.get<any>(this.apiUrl, { params });
   }
 
   // Crear un nuevo libro
@@ -21,11 +24,13 @@ export class BookService {
     return this.http.post<Book>(this.apiUrl, book);
   }
 
+  // Eliminar un libro (Cambiamos id a number para hacer match con tu front)
   deleteBook(id: number): Observable<void> {
-  return this.http.delete<void>(`${this.apiUrl}/${id}`);
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
+  // Actualizar un libro
   updateBook(id: number, book: CreateBookRequest): Observable<Book> {
-  return this.http.put<Book>(`${this.apiUrl}/${id}`, book);
-}
+    return this.http.put<Book>(`${this.apiUrl}/${id}`, book);
+  }
 }

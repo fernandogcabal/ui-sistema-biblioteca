@@ -19,7 +19,8 @@ export class BooksComponent implements OnInit {
   private bookService = inject(BookService);
   private router = inject(Router);
   private http = inject(HttpClient);
-private userApiUrl = 'http://localhost:8080/api/users/me';
+  private userApiUrl = 'http://localhost:8080/api/users/me';
+
 
 userProfile = signal({
   username: '',
@@ -30,6 +31,11 @@ userProfile = signal({
   
   // 💡 Control de pestañas: 'libros' o 'perfil'
   currentTab = signal<'libros' | 'perfil'>('libros');
+
+  // 1. Agrega estas tres variables junto a tus otros signals (books, currentTab, etc.)
+  currentPage = signal<number>(0);  // Spring Boot inicia en la página 0
+  pageSize = signal<number>(10);   // Límite de 10 elementos por página
+  totalPages = signal<number>(0);   // Almacenará el total de páginas que calcule la BD
 
   // Control de visibilidad del Modal
   isModalOpen = signal<boolean>(false);
@@ -61,12 +67,34 @@ userProfile = signal({
   }
 }
 
-  loadBooks(): void {
-    this.bookService.getBooks().subscribe({
-      next: (data) => this.books.set(data),
-      error: (err) => console.error('Error al cargar libros:', err)
-    });
+// 2. Reemplaza por completo tu método loadBooks() actual:
+loadBooks(): void {
+  // Le pasamos la página y el tamaño actual al servicio
+  this.bookService.getBooks(this.currentPage(), this.pageSize()).subscribe({
+    next: (response) => {
+      // 💡 Súper Importante: Extraemos .content para rellenar la tabla
+      this.books.set(response.content);
+      // Guardamos cuántas páginas existen en total
+      this.totalPages.set(response.totalPages);
+    },
+    error: (err) => console.error('Error al cargar libros paginados:', err)
+  });
+}
+
+// 3. Agrega estos dos métodos abajo de loadBooks() para controlar los botones:
+goToNextPage(): void {
+  if (this.currentPage() < this.totalPages() - 1) {
+    this.currentPage.update(p => p + 1);
+    this.loadBooks(); // Recarga la tabla con los nuevos 10 libros
   }
+}
+
+goToPreviousPage(): void {
+  if (this.currentPage() > 0) {
+    this.currentPage.update(p => p - 1);
+    this.loadBooks(); // Recarga la tabla con los 10 libros anteriores
+  }
+}
 
   openModal(): void {
     this.isEditing.set(false);

@@ -82,6 +82,60 @@
           </tbody>
         </table>
       </section>
+      <div
+        class="pagination-container"
+        style="
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-top: 1.5rem;
+          padding: 0 0.5rem;
+        "
+      >
+        <span style="font-size: 0.9rem; color: #7f8c8d">
+          Página <strong>{{ currentPage() + 1 }}</strong> de <strong>{{ totalPages() }}</strong>
+        </span>
+
+        <div style="display: flex; gap: 0.5rem">
+          <button
+            type="button"
+            class="btn-secondary"
+            (click)="goToPreviousPage()"
+            [disabled]="currentPage() === 0"
+            style="
+              padding: 0.5rem 1rem;
+              font-weight: 700;
+              cursor: pointer;
+              border-radius: 4px;
+              border: 1px solid #a1a1a1;
+              background: #f8f9fa;
+              color: #000000 !important;
+              opacity: 1;
+            "
+          >
+            ⬅️ Anterior
+          </button>
+
+          <button
+            type="button"
+            class="btn-secondary"
+            (click)="goToNextPage()"
+            [disabled]="currentPage() >= totalPages() - 1"
+            style="
+              padding: 0.5rem 1rem;
+              font-weight: 700;
+              cursor: pointer;
+              border-radius: 4px;
+              border: 1px solid #a1a1a1;
+              background: #f8f9fa;
+              color: #000000 !important;
+              opacity: 1;
+            "
+          >
+            Siguiente ➡️
+          </button>
+        </div>
+      </div>
     }
 
     @if (currentTab() === 'perfil') {
