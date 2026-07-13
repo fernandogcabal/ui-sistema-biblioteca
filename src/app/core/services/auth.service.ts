@@ -8,7 +8,6 @@ import { LoginRequest, UserRegisterRequest, AuthResponse, User } from '../../sha
 })
 export class AuthService {
   private http = inject(HttpClient);
-  // URL de tu controlador UserController.java en Spring Boot
   private apiUrl = 'http://localhost:8080/api/users'; 
 
   /**
