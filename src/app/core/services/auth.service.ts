@@ -8,13 +8,8 @@ import { LoginRequest, UserRegisterRequest, AuthResponse, User } from '../../sha
 })
 export class AuthService {
   private http = inject(HttpClient);
-  // URL de tu controlador UserController.java en Spring Boot
   private apiUrl = 'http://localhost:8080/api/users'; 
 
-  /**
-   * Envía las credenciales al backend para iniciar sesión.
-   * Si es exitoso, guarda el token JWT en el LocalStorage.
-   */
   login(credentials: LoginRequest): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.apiUrl}/login`, credentials).pipe(
       tap(response => {
