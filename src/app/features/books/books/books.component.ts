@@ -7,7 +7,7 @@ import { BookService } from '../../../core/services/book.service';
 import { Book, CreateBookRequest } from '../../../shared/models';
 import { HttpClient } from '@angular/common/http'; // Asegura este import arriba
 import { Subject } from 'rxjs';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-books',
@@ -45,6 +45,8 @@ export class BooksComponent implements OnInit {
   searchTerm = signal<string>(''); // 💡 Almacena el texto de búsqueda  
   // 💡 Subject para controlar el flujo de escritura
   private searchSubject = new Subject<string>();
+  // 💡 Emisor reactivo para la página actual
+  private page$ = new Subject<number>();
   
   // Objeto temporal para el formulario
   newBook: CreateBookRequest = {
@@ -57,17 +59,33 @@ export class BooksComponent implements OnInit {
     userId: 1 
   };
   
-  ngOnInit(): void {
-    this.loadBooks();
-    // 💡 Configuración del Debounce
+ngOnInit(): void {
+    // 1. Configuramos el debounce de la barra de búsqueda
     this.searchSubject.pipe(
-      debounceTime(300),           // Espera 300ms de silencio en el teclado
-      distinctUntilChanged()       // Evita disparar la petición si el texto no cambió (ej. si pulsó shift)
+      debounceTime(300),
+      distinctUntilChanged()
     ).subscribe(value => {
       this.searchTerm.set(value);
-      this.currentPage.set(0);     // Resetea a la primera página
-      this.loadBooks();
+      this.currentPage.set(0); // Reseteamos página en el signal
+      this.page$.next(0);      // Disparamos la carga para la página 0
     });
+
+    // 2. Controlamos las peticiones HTTP cancelando las obsoletas con switchMap
+    this.page$.pipe(
+      // switchMap se encarga de cancelar la petición HTTP anterior si llega una nueva
+      switchMap((page) => 
+        this.bookService.getBooks(page, this.pageSize(), this.searchTerm())
+      )
+    ).subscribe({
+      next: (response) => {
+        this.books.set(response.content);
+        this.totalPages.set(response.totalPages);
+      },
+      error: (err) => console.error('Error al cargar libros con switchMap:', err)
+    });
+
+    // Carga inicial
+    this.page$.next(this.currentPage());
   }
   
   // 💡 Método para alternar las vistas desde el menú lateral
@@ -78,30 +96,22 @@ export class BooksComponent implements OnInit {
     }
   }
   
-  // 2. Reemplaza por completo tu método loadBooks() actual:
-  loadBooks(): void {
-    // Pasamos el valor actual de 'searchTerm' al servicio
-    this.bookService.getBooks(this.currentPage(), this.pageSize(), this.searchTerm()).subscribe({
-      next: (response) => {
-        this.books.set(response.content);
-        this.totalPages.set(response.totalPages);
-      },
-      error: (err) => console.error('Error al cargar libros:', err)
-    });
+loadBooks(): void {
+    // Simplemente empujamos la página actual para que el switchMap reaccione y cargue
+    this.page$.next(this.currentPage());
   }
-  
-  // 3. Agrega estos dos métodos abajo de loadBooks() para controlar los botones:
+
   goToNextPage(): void {
     if (this.currentPage() < this.totalPages() - 1) {
       this.currentPage.update(p => p + 1);
-      this.loadBooks(); // Recarga la tabla con los nuevos 10 libros
+      this.page$.next(this.currentPage()); // 💡 Gatilla la recarga segura
     }
   }
-  
+
   goToPreviousPage(): void {
     if (this.currentPage() > 0) {
       this.currentPage.update(p => p - 1);
-      this.loadBooks(); // Recarga la tabla con los 10 libros anteriores
+      this.page$.next(this.currentPage()); // 💡 Gatilla la recarga segura
     }
   }
   
