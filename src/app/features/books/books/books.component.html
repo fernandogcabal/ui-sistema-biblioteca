@@ -24,6 +24,29 @@
     @if (currentTab() === 'libros') {
       <header class="content-header">
         <h2>Catálogo de Libros</h2>
+
+        <div
+          class="search-container"
+          style="flex: 1; max-width: 400px; position: relative"
+          aria-label="Buscar libros por título"
+        >
+          <input
+            type="text"
+            placeholder="🔍 Buscar libro por título..."
+            [value]="searchTerm()"
+            (input)="onSearch($event)"
+            style="
+              width: 100%;
+              padding: 0.6rem 1rem;
+              border-radius: 20px;
+              border: 1px solid #dcdde1;
+              outline: none;
+              font-size: 0.95rem;
+              box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+            "
+          />
+        </div>
+
         <button class="btn-primary" (click)="openModal()">+ Agregar Libro</button>
       </header>
 
@@ -241,36 +264,78 @@
       <form (ngSubmit)="onSaveBook()">
         <div class="modal-body">
           <div class="form-group-modal">
-            <label>Título *</label>
+            <label for="book-title">Título *</label>
             <input
               type="text"
+              id="book-title"
               [(ngModel)]="newBook.title"
               name="title"
               required
               placeholder="Ej. El Alquimista"
+              [class.input-error]="validationErrors()['title']"
+              [attr.aria-invalid]="validationErrors()['title'] ? 'true' : 'false'"
+              [attr.aria-describedby]="validationErrors()['title'] ? 'title-error' : null"
             />
+            @if (validationErrors()['title']) {
+              <span
+                id="title-error"
+                role="alert"
+                class="error-message-text"
+                style="color: #e74c3c; font-size: 0.8rem; margin-top: 0.25rem; display: block"
+              >
+                ⚠️ {{ validationErrors()['title'] }}
+              </span>
+            }
           </div>
 
           <div class="form-group-modal">
-            <label>Autor *</label>
+            <label for="book-author">Autor *</label>
             <input
               type="text"
+              id="book-author"
               [(ngModel)]="newBook.author"
               name="author"
               required
               placeholder="Ej. Paulo Coelho"
+              [class.input-error]="validationErrors()['author']"
+              [attr.aria-invalid]="validationErrors()['author'] ? 'true' : 'false'"
+              [attr.aria-describedby]="validationErrors()['author'] ? 'author-error' : null"
             />
+            @if (validationErrors()['author']) {
+              <span
+                id="author-error"
+                role="alert"
+                class="error-message-text"
+                style="color: #e74c3c; font-size: 0.8rem; margin-top: 0.25rem; display: block"
+              >
+                ⚠️ {{ validationErrors()['author'] }}
+              </span>
+            }
           </div>
 
           <div class="form-group-modal">
-            <label>ISBN *</label>
+            <label for="book-isbn">ISBN *</label>
             <input
               type="text"
+              id="book-isbn"
               [(ngModel)]="newBook.isbn"
               name="isbn"
               required
               placeholder="Ej. 978..."
+              [class.input-error]="validationErrors()['isbn']"
+              [attr.aria-invalid]="validationErrors()['isbn'] ? 'true' : 'false'"
+              [attr.aria-describedby]="validationErrors()['isbn'] ? 'isbn-error' : null"
             />
+            @if (validationErrors()['isbn']) {
+              <span
+                id="isbn-error"
+                role="alert"
+                class="error-message-text"
+                style="color: #e74c3c; font-size: 0.8rem; margin-top: 0.25rem; display: block"
+              >
+                ⚠️ {{ validationErrors()['isbn'] }}
+              </span>
+            }
           </div>
 
           <div class="form-row">
