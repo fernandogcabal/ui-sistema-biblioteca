@@ -59,7 +59,7 @@ src/app/
 ### 🔐 Security & Error Handling
 
 - **HTTP Interceptor:** Automatically injects the `Authorization: Bearer <TOKEN>` header into all protected API requests.
-- **Centralized Error Handling:** Dynamic field-level rendering of backend validation failures.
+- **Field-leve Error Handling:** Field-level rendering of backend validation errors.
 
 ---
 
@@ -67,7 +67,7 @@ src/app/
 
 ### Prerequisites
 
-- **Node.js**: `v20.x` or higher
+- **Node.js**: `^20.19.0`, `^22.12.0`, or `^24.0.0` (Node.js `20.19.0` or higher required)
 - **npm**: `v10.x` or higher
 - **Angular CLI**: `npm install -g @angular/cli`
 - Running Backend API: [api-sistema-biblioteca](https://github.com/fernandogcabal/api-sistema-biblioteca) (Spring Boot)
@@ -77,7 +77,7 @@ src/app/
 1. **Clone the repository:**
 
    ```bash
-   git clone [https://github.com/fernandogcabal/UI-SISTEMA-BIBLIOTECA.git](https://github.com/fernandogcabal/UI-SISTEMA-BIBLIOTECA.git)
+   git clone https://github.com/fernandogcabal/UI-SISTEMA-BIBLIOTECA.git
    cd UI-SISTEMA-BIBLIOTECA
    ```
 
@@ -123,14 +123,6 @@ To execute unit tests with the [Vitest](https://vitest.dev/) test runner:
 
 ```bash
 ng test
-```
-
-### End-to-End (E2E) Tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
 ```
 
 ---
