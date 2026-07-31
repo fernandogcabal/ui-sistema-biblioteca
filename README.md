@@ -37,9 +37,7 @@ src/app/
 │   ├── auth/              # Login / Register
 │   ├── books/             # Catalog, CRUD, and modals
 │   ├── profile/           # User profile management
-│   └── loans/             # Book loans module
 └── shared/                # Data models, interfaces, and reusable components
-    ├── components/
     └── models/            # Domain interfaces (Book, User, Request/Response DTOs)
 ```
 
